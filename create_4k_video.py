@@ -9,7 +9,7 @@ TARGET_DURATION_SECONDS = 3600
 SEGMENT_DURATION = 60
 
 
-def get_fastest_encoder():
+def get_encoder_list():
     encoders = [
         ("h264_nvenc", ["-preset", "p1", "-tune", "hq", "-rc", "vbr", "-cq", "23", "-b:v", "0"]),
         ("h264_amf", ["-quality", "speed", "-rc", "cbr", "-b:v", "20M"]),
@@ -17,39 +17,54 @@ def get_fastest_encoder():
         ("h264_mf", []),
     ]
     test = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True)
-    for enc, params in encoders:
-        if enc in test.stdout:
-            print(f"[video] Using hardware encoder: {enc}", flush=True)
-            return enc, params
-    print("[video] No hardware encoder found, using libx264", flush=True)
-    return "libx264", ["-preset", "ultrafast", "-crf", "23"]
+    available = [e for e, _ in encoders if e in test.stdout]
+    return available
 
 
 def create_segment(image_path: str, segment_path: str) -> bool:
-    encoder, enc_params = get_fastest_encoder()
-    cmd = [
-        "ffmpeg", "-y",
-        "-loop", "1",
-        "-i", str(image_path),
-        "-c:v", encoder,
-        "-t", str(SEGMENT_DURATION),
-        "-r", str(FPS),
-        "-pix_fmt", "yuv420p",
-        "-vf", f"scale={VIDEO_WIDTH}:{VIDEO_HEIGHT}:force_original_aspect_ratio=decrease,pad={VIDEO_WIDTH}:{VIDEO_HEIGHT}:(ow-iw)/2:(oh-ih)/2",
-        *enc_params,
-        "-profile:v", "high",
-        "-level", "5.1",
-        "-an",
-        str(segment_path)
-    ]
-    print(f"[video] Creating {SEGMENT_DURATION}s segment...", flush=True)
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"[video] Segment failed: {result.stderr[:300]}", flush=True)
-        return False
-    size = segment_path.stat().st_size
-    print(f"[video] Segment done: {size / 1024 / 1024:.2f} MB", flush=True)
-    return True
+    encoders = get_encoder_list()
+    attempts = encoders + ["libx264"]
+    tried = []
+
+    for enc_name in attempts:
+        if enc_name == "h264_nvenc":
+            params = ["-preset", "p1", "-tune", "hq", "-rc", "vbr", "-cq", "23", "-b:v", "0"]
+        elif enc_name == "h264_amf":
+            params = ["-quality", "speed", "-rc", "cbr", "-b:v", "20M"]
+        elif enc_name == "h264_qsv":
+            params = ["-preset", "veryfast", "-global_quality", "23"]
+        elif enc_name == "h264_mf":
+            params = []
+        else:
+            params = ["-preset", "ultrafast", "-crf", "23"]
+
+        cmd = [
+            "ffmpeg", "-y",
+            "-loop", "1",
+            "-i", str(image_path),
+            "-c:v", enc_name,
+            "-t", str(SEGMENT_DURATION),
+            "-r", str(FPS),
+            "-pix_fmt", "yuv420p",
+            "-vf", f"scale={VIDEO_WIDTH}:{VIDEO_HEIGHT}:force_original_aspect_ratio=decrease,pad={VIDEO_WIDTH}:{VIDEO_HEIGHT}:(ow-iw)/2:(oh-ih)/2",
+            *params,
+            "-profile:v", "high",
+            "-level", "5.1",
+            "-an",
+            str(segment_path)
+        ]
+        tried.append(enc_name)
+        print(f"[video] Trying encoder: {enc_name}...", flush=True)
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            size = segment_path.stat().st_size
+            print(f"[video] Segment done: {size / 1024 / 1024:.2f} MB ({enc_name})", flush=True)
+            return True
+        err_preview = result.stderr.replace('\n', ' | ')[:200]
+        print(f"[video] {enc_name} failed: {err_preview}", flush=True)
+
+    print(f"[video] All encoders failed: {', '.join(tried)}", flush=True)
+    return False
 
 
 def concat_segments(segment_path: str, output_path: str):
