@@ -2,7 +2,7 @@ name: Kreggsart TV - Daily 4K Screensaver Upload
 
 on:
   schedule:
-    - cron: '0 12 * * *'  # 8:00 AM EST (12:00 PM UTC)
+    - cron: '0 14 * * *'  # 10:00 AM EST (2:00 PM UTC) - before lunch & evening peaks
   workflow_dispatch:
 
 permissions:
