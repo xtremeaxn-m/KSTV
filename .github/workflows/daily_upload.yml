@@ -1,0 +1,58 @@
+name: Kreggsart TV - Daily 4K Screensaver Upload
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # 8:00 AM EST (12:00 PM UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create .env
+        run: |
+          echo "POLLINATIONS_API_KEY=${{ secrets.POLLINATIONS_API_KEY }}" >> .env
+          echo "YT_CLIENT_ID=${{ secrets.YT_CLIENT_ID }}" >> .env
+          echo "YT_CLIENT_SECRET=${{ secrets.YT_CLIENT_SECRET }}" >> .env
+          echo "YT_REFRESH_TOKEN=${{ secrets.YT_REFRESH_TOKEN }}" >> .env
+
+      - name: Generate screensaver image
+        run: python generate_screensaver_image.py
+
+      - name: Create 4K video (1 hour)
+        run: python create_4k_video.py
+
+      - name: Upload to YouTube
+        run: python upload_to_youtube.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: screensaver-${{ github.run_number }}
+          path: |
+            output/images/
+            output/videos/
+            output/thumbnail.jpg
+            output/upload_result.json
+          retention-days: 7
