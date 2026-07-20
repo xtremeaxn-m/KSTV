@@ -13,7 +13,7 @@ load_dotenv()
 YT_CLIENT_ID = os.getenv("YT_CLIENT_ID") or os.getenv("YOUTUBE_CLIENT_ID", "")
 YT_CLIENT_SECRET = os.getenv("YT_CLIENT_SECRET") or os.getenv("YOUTUBE_CLIENT_SECRET", "")
 YT_REFRESH_TOKEN = os.getenv("YT_REFRESH_TOKEN") or os.getenv("YOUTUBE_REFRESH_TOKEN", "")
-CHANNEL_NAME = "Relaxing Screensavers HD"
+CHANNEL_NAME = "DreamDrift"
 
 
 def get_authenticated_service():
@@ -123,16 +123,16 @@ def generate_title_description(screensaver_name: str):
 
 def update_channel_info(youtube):
     channel_desc = (
-        "Welcome to Relaxing Screensavers HD - your daily escape into peaceful nature.\n\n"
-        "Every day we upload 1 hour of stunning HD screensavers to help you relax, "
-        "meditate, study, work, or sleep. No music, no talking - just pure calming visuals.\n\n"
+        "Welcome to DreamDrift - your daily escape into peaceful, dreamy visuals.\n\n"
+        "Every day we upload 1 hour of stunning HD ambient visuals to help you relax, "
+        "meditate, study, work, or sleep. No music, no talking - just pure calming scenery.\n\n"
         "Perfect for:\n"
-        "- TV screensavers & digital displays\n"
+        "- TV backgrounds & digital displays\n"
         "- Meditation & mindfulness\n"
-        "- Studying & working background\n"
+        "- Studying & working focus\n"
         "- Sleep aid & relaxation\n"
         "- Home decor ambience\n\n"
-        "Subscribe for a new relaxing screensaver every day at 10 AM EST!"
+        "Subscribe for a new dreamy visual escape every day at 10 AM EST!"
     )
     try:
         channels = youtube.channels().list(part="brandingSettings", mine=True).execute()
@@ -145,7 +145,7 @@ def update_channel_info(youtube):
                     "brandingSettings": {
                         "channel": {
                             "description": channel_desc,
-                            "keywords": "screensaver relaxing screensaver HD screensaver nature screensaver TV screensaver background video ambience relaxation calm peaceful meditation",
+                            "keywords": "dreamdrift relaxing visuals ambient nature scenery TV background meditation sleep study work calm peaceful",
                         }
                     }
                 }
