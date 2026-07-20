@@ -124,15 +124,23 @@ def generate_title_description(screensaver_name: str):
 def update_channel_info(youtube):
     channel_desc = (
         "Welcome to DreamDrifter TV - your daily escape into peaceful, dreamy visuals.\n\n"
-        "Every day we upload 1 hour of stunning HD ambient visuals to help you relax, "
-        "meditate, study, work, or sleep. No music, no talking - just pure calming scenery.\n\n"
-        "Perfect for:\n"
-        "- TV backgrounds & digital displays\n"
-        "- Meditation & mindfulness\n"
-        "- Studying & working focus\n"
-        "- Sleep aid & relaxation\n"
-        "- Home decor ambience\n\n"
-        "Subscribe for a new dreamy visual escape every day at 10 AM EST!"
+        "Every day we upload 1 hour of stunning HD ambient visuals and relaxing screensavers "
+        "to help you unwind, meditate, study, work, or sleep. No music, no talking - "
+        "just pure calming nature scenery and beautiful landscapes.\n\n"
+        "🔹 WHAT WE OFFER:\n"
+        "- 1 Hour HD Ambient Visuals\n"
+        "- Relaxing Screensavers for TV\n"
+        "- Nature & Scenic Landscapes\n"
+        "- No Music - No Audio - Pure Calm\n"
+        "- New Video Every Day at 10 AM EST\n\n"
+        "🔹 PERFECT FOR:\n"
+        "• TV Background & Digital Displays\n"
+        "• Meditation & Mindfulness\n"
+        "• Studying & Working Focus\n"
+        "• Sleep Aid & Deep Relaxation\n"
+        "• Home Decor Ambience\n"
+        "• Yoga & Spa Environments\n\n"
+        "Subscribe and drift into a dreamy visual escape every day. 🌙"
     )
     try:
         channels = youtube.channels().list(part="brandingSettings", mine=True).execute()
